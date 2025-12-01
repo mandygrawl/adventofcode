@@ -1,0 +1,66 @@
+---
+title: "Advent1"
+author: "Mandy Grawl"
+date: "2025-12-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("readxl")
+library(readxl)
+library(dplyr)
+raw_data <- read_excel("Advent1.xlsx")
+```
+
+```{r}
+#Part 1
+
+data <- raw_data %>%
+  mutate(
+    letter = substr(values, 1, 1),
+    val    = as.numeric(substr(values, 2, nchar(values))),
+    signed = if_else(letter == "L", -val, val),
+    
+    #total before modulo
+    cum_total = 50 + cumsum(signed),
+  
+    #dial position
+    running_total = cum_total %% 100,
+
+  ) %>% filter(running_total == 0)
+
+data
+```
+
+```{r}
+#Part 2
+rotations <- read_excel("Advent1.xlsx", col_names = FALSE)[[1]]
+
+pos <- 50
+zero_count <- 0
+
+#each rotation
+for (rot in rotations) {
+  dir <- substr(rot, 1, 1)                   # "L" or "R"
+  steps <- as.numeric(substr(rot, 2, nchar(rot)))  # number of clicks
+  
+  if (dir == "R") {
+    #right
+    for (i in 1:steps) {
+      pos <- (pos + 1) %% 100
+      if (pos == 0) zero_count <- zero_count + 1
+    }
+  } else if (dir == "L") {
+    #left
+    for (i in 1:steps) {
+      pos <- (pos - 1) %% 100
+      if (pos < 0) pos <- pos + 100
+      if (pos == 0) zero_count <- zero_count + 1
+    }
+  }
+}
+zero_count
+
+```
+
