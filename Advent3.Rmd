@@ -33,3 +33,31 @@ sum(bank_values)
 
 ```
 
+```{r}
+max_k_from_bank <- function(s, k = 12) {
+  digits <- as.integer(strsplit(s, "")[[1]])
+  n <- length(digits)
+  if (k > n) stop("")
+  
+  res_digits <- integer(k)
+  start <- 1
+  
+  for (pos in seq_len(k)) {
+    end_idx <- n - (k - pos)
+    seg <- digits[start:end_idx]
+    maxval <- max(seg)
+    rel_idx <- which(seg == maxval)[1]
+    res_digits[pos] <- maxval
+    start <- start + rel_idx
+  }
+  
+  as.numeric(paste(res_digits, collapse = ""))
+}
+
+bank_values <- vapply(banks, max_k_from_bank, numeric(1), k = 12)
+
+sum(bank_values)
+
+```
+
+
