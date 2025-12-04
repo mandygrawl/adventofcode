@@ -1,0 +1,81 @@
+---
+title: "Advent4"
+author: "Mandy Grawl"
+date: "2025-12-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+grid <- readLines("Advent4.txt")
+
+mat <- do.call(rbind, strsplit(grid, ""))
+
+nr <- nrow(mat)
+nc <- ncol(mat)
+
+count_adjacent <- function(r, c, mat) {
+  dirs <- matrix(c(
+    -1, -1, -1,  0, -1,  1,
+     0, -1,         0,  1,
+     1, -1,  1,  0,  1,  1
+  ), ncol = 2, byrow = TRUE)
+  
+  sum(sapply(1:nrow(dirs), function(i) {
+    rr <- r + dirs[i, 1]
+    cc <- c + dirs[i, 2]
+    if (rr >= 1 && rr <= nr && cc >= 1 && cc <= nc) {
+      mat[rr, cc] == "@"
+    } else {
+      FALSE
+    }
+  }))
+}
+
+accessible <- 0
+
+for (r in 1:nr) {
+  for (c in 1:nc) {
+    if (mat[r, c] == "@") {
+      adj <- count_adjacent(r, c, mat)
+      if (adj < 4) {
+        accessible <- accessible + 1
+      }
+    }
+  }
+}
+
+accessible
+
+```
+```{r}
+remove_count <- 0
+current <- mat
+
+repeat {
+  accessible_positions <- which(current == "@", arr.ind = TRUE)
+  
+  to_remove <- apply(accessible_positions, 1, function(pos) {
+    r <- pos[1]; c <- pos[2]
+    count_adjacent(r, c, current) < 4
+  })
+  
+  pos_remove <- accessible_positions[to_remove, , drop = FALSE]
+  
+  if (nrow(pos_remove) == 0) break
+
+  for (i in 1:nrow(pos_remove)) {
+    current[pos_remove[i, 1], pos_remove[i, 2]] <- "."
+  }
+  
+  remove_count <- remove_count + nrow(pos_remove)
+}
+
+remove_count
+```
+
+
