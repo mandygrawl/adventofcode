@@ -1,0 +1,96 @@
+---
+title: "Advent5"
+author: "Mandy Grawl"
+date: "2025-12-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readxl)
+
+# Read the one-column Excel file
+df <- read_excel("Advent5.xlsx", col_names = FALSE)
+
+# Convert column to character so ranges like "123-456" stay intact
+col <- as.character(df[[1]])
+
+# Find the blank separator line (your file has it on row 175)
+blank_line <- which(is.na(col))[1]
+
+# Split into fresh ranges (above blank) and IDs (below blank)
+range_lines <- col[1:(blank_line - 1)]
+id_lines    <- col[(blank_line + 1):length(col)]
+
+# Parse the ranges "a-b"
+range_split <- strsplit(range_lines, "-")
+
+# Convert to numeric start/end vectors
+starts <- as.numeric(sapply(range_split, `[`, 1))
+ends   <- as.numeric(sapply(range_split, `[`, 2))
+
+# Ingredient IDs
+ids <- as.numeric(id_lines)
+
+# Function to check if an ID is inside ANY range
+is_fresh <- function(id, starts, ends) {
+  any(id >= starts & id <= ends)
+}
+
+# Apply to every ID
+fresh_flags <- mapply(is_fresh, ids, MoreArgs = list(starts = starts, ends = ends))
+
+# Count fresh IDs
+answer <- sum(fresh_flags)
+
+cat("Number of fresh ingredient IDs:", answer, "\n")
+
+
+```
+
+```{r}
+library(readxl)
+library(dplyr)
+
+df <- read_excel("Advent5.xlsx", col_names = FALSE)
+
+blank_row <- which(is.na(df$...1))[1]
+
+ranges <- df$...1[1:(blank_row - 1)]
+ranges <- strsplit(ranges, "-")
+ranges <- lapply(ranges, function(x) as.numeric(x))
+ranges <- do.call(rbind, ranges)
+colnames(ranges) <- c("start", "end")
+
+ranges <- ranges[order(ranges[,1]),]
+
+merged <- list()
+cur <- ranges[1,]
+
+for (i in 2:nrow(ranges)) {
+  rng <- ranges[i,]
+  if (rng[1] > cur[2] + 1) {
+    merged[[length(merged) + 1]] <- cur
+    cur <- rng
+  } else {
+    cur[2] <- max(cur[2], rng[2])
+  }
+}
+merged[[length(merged) + 1]] <- cur
+
+merged <- do.call(rbind, merged)
+
+available_ids <- df$...1[(blank_row + 1):nrow(df)] |> as.numeric()
+
+is_fresh <- function(x, merged) {
+  any(x >= merged[,1] & x <= merged[,2])
+}
+part2 <- sum(merged[,2] - merged[,1] + 1)
+part2
+
+```
+
+
