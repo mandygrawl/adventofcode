@@ -1,0 +1,98 @@
+---
+title: "Advent6"
+author: "Mandy Grawl"
+date: "2025-12-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(stringr)
+
+file <- "Advent6.txt"
+
+lines <- readLines(file)
+maxlen <- max(nchar(lines))
+padded <- lapply(lines, \(x) str_pad(x, maxlen, side = "right"))
+mat <- do.call(rbind, lapply(padded, \(ln) strsplit(ln, "")[[1]]))
+
+n_rows <- nrow(mat)
+
+is_blank_col <- apply(mat, 2, \(col) all(col == " "))
+
+nb <- which(!is_blank_col)
+groups <- split(nb, cumsum(c(1, diff(nb) != 1)))
+
+evaluate_group <- function(cols) {
+
+  sub <- mat[, cols, drop = FALSE]
+
+  row_vals <- apply(sub, 1, paste0, collapse = "")
+  row_vals <- str_trim(row_vals)
+
+  nz <- row_vals[row_vals != ""]
+
+  op <- tail(nz, 1)
+
+  if (!op %in% c("+", "*"))
+    stop("Unknown operator in group.")
+
+  num_strings <- nz[-length(nz)]
+
+  nums <- as.numeric(num_strings)
+
+  if (op == "+") {
+    sum(nums)
+  } else {
+    prod(nums)
+  }
+}
+
+answers <- sapply(groups, evaluate_group)
+sum(answers)
+```
+
+```{r}
+mat <- do.call(rbind, lapply(lines, \(x) str_pad(x, maxlen, "right")))
+mat <- do.call(rbind, lapply(1:nrow(mat), \(i) strsplit(mat[i,], "")[[1]]))
+
+is_blank <- apply(mat, 2, \(col) all(col == " "))
+
+nb <- which(!is_blank)
+
+raw_groups <- split(nb, cumsum(c(1, diff(nb) != 1)))
+groups <- rev(raw_groups)
+
+evaluate_problem <- function(cols) {
+
+  sub <- mat[, cols, drop = FALSE]
+
+  bottom <- sub[nrow(sub), ]
+
+  op_idx <- which(bottom %in% c("+", "*"))
+  if (length(op_idx) != 1)
+    stop("Could not determine operator")
+
+  op <- bottom[op_idx]
+
+  digit_cols <- cols[-op_idx]
+  digit_mat <- mat[1:(nrow(mat)-1), digit_cols, drop = FALSE]
+
+  nums <- apply(digit_mat, 2, \(col) {
+    s <- paste(col, collapse = "")
+    s <- str_trim(s)
+    as.numeric(s)
+  })
+
+  if (op == "+") sum(nums)
+  else prod(nums)
+}
+
+sum(sapply(groups, evaluate_problem))
+
+```
+
+
