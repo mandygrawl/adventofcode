@@ -37,60 +37,6 @@ for (i in 1:(n-1)) {
 max_area
 
 ```
-
-```{r}
-mat <- do.call(rbind, lapply(lines, function(l) {
-  chars <- strsplit(l, "")[[1]]
-  length(chars) <- maxw
-  chars[is.na(chars)] <- " "
-  chars
-}))
-nrows <- nrow(mat)
-ncols <- ncol(mat)
-
-pos <- which(mat == "S", arr.ind = TRUE)
-if (nrow(pos) == 0) stop("No S found in input")
-start_row <- pos[1,1]
-start_col <- pos[1,2]
-
-split_rows_by_col <- vector("list", ncols)
-for (c in seq_len(ncols)) {
-  split_rows_by_col[[c]] <- which(mat[, c] == "^")
-}
-
-memo <- new.env(parent = emptyenv())
-
-count_from <- function(r, c) {
-  if (c < 1 || c > ncols) return(1.0)
-  if (r > nrows) return(1.0)
-  key <- paste(r, c, sep = ",")
-  if (exists(key, envir = memo, inherits = FALSE)) {
-    return(get(key, envir = memo, inherits = FALSE))
-  }
-  rows <- split_rows_by_col[[c]]
-  if (length(rows) == 0) {
-    val <- 1.0
-    assign(key, val, envir = memo)
-    return(val)
-  }
-  idx <- which(rows >= r)
-  if (length(idx) == 0) {
-    val <- 1.0
-    assign(key, val, envir = memo)
-    return(val)
-  }
-  rsplit <- rows[idx[1]]
-  left <- count_from(rsplit, c - 1)
-  right <- count_from(rsplit, c + 1)
-  val <- left + right
-  assign(key, val, envir = memo)
-  return(val)
-}
-
-result <- count_from(start_row + 1, start_col)
-
-result
-```
-
+could not for the life of me figure out how to do part two. I apologize
 
 
