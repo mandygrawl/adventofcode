@@ -1,0 +1,46 @@
+---
+title: "Advent11"
+author: "Mandy Grawl"
+date: "2025-12-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+lines <- readLines("Advent11.txt")
+
+edges <- lapply(lines, function(line) {
+  sp <- strsplit(line, ":")[[1]]
+  src <- trimws(sp[1])
+  tg <- trimws(sp[2])
+  if (nchar(tg) == 0) return(NULL)
+  tg <- strsplit(tg, " +")[[1]]
+  data.frame(from = src, to = tg, stringsAsFactors = FALSE)
+})
+
+edges <- do.call(rbind, edges)
+
+adj <- split(edges$to, edges$from)
+
+count_paths <- function(start, target, visited = character()) {
+  if (start == target) return(1)
+  if (!start %in% names(adj)) return(0)
+
+  total <- 0
+  for (nxt in adj[[start]]) {
+    if (!(nxt %in% visited)) {
+      total <- total + count_paths(nxt, target, c(visited, start))
+    }
+  }
+  total
+}
+
+count_paths("you", "out")
+
+```
+
+only had time to do part 1
+
